@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="css/reset.css">
     <link rel="stylesheet" type="text/css" href="css/iconfont.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
+    <script src="./js/jquery-1.12.4.min.js"></script>
 </head>
 
 <body>
@@ -30,6 +31,39 @@
         </div>
 
     </div> 
+    <script>
+        $(function(){
+            $('.input_sub').click(function(e){
+                e.preventDefault();
+                var username=$('.input_txt').val().trim();
+                var password=$('.input_pass').val().trim();
+                if (username == ''||password=='') {
+                    // 引入模态框
+                    alert('请填写完整!!!');
+                    return;
+                };
+
+                $.ajax({
+                    url:'http://localhost:8080/admin/user/login',
+                    type:'post',
+                    data:{
+                        username:username,
+                        password:password,
+                    },
+                    success:function(backData){
+                          if(backData.code == 200){
+                              alert('登录成功!');
+                              window.location.href = "./index.html";
+                          }else{
+                              alert('账号后密码错误...')
+                          }
+                    }
+                })
+            })
+       
+
+       })
+    </script>
 
 </body>
 

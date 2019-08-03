@@ -18,7 +18,7 @@
         <a href="#" class="logo"><img src="images/logo02.png" alt="logo"></a>
         <div class="user_info">
             <img src="images/2.jpg" alt="person">
-            <span>欢迎&nbsp;&nbsp;李思思</span>
+            <span>欢迎李思思</span>
             <b>管理员</b>
         </div>
         <div class="menu">
@@ -51,9 +51,6 @@
     <div class="main" id="main_body">
         <iframe src="main_count.html" frameborder="0" id="main_frame" name="main_frame" frameborder="0" scrolling="auto"></iframe>
     </div>
-
-
-
     <script>
         var $level01 = $('.level01');
         var $subli = $('.level02 li')
@@ -91,7 +88,6 @@
             resizeFrame();
         })
 
-
         function setMenu(m,n){
            $level01.eq(m).addClass('active').siblings().not('.level02').removeClass('active');
            if(m!=1){              
@@ -101,6 +97,31 @@
               $('.level02').children().eq(n).addClass('active').siblings().removeClass('active');
            }
         }
+
+
+        // 退出登录
+        $('.icon-tuichu').parent().click(function(e){
+            e.preventDefault();
+            if (confirm('你确定退出么')) {
+                $.ajax({
+                    url:'http://localhost:8080/admin/user/logout',
+                    type:'post',
+
+                });
+                window.location.href='./login.html';
+            }
+        });
+        // 获取用户信息
+        $.ajax({
+            url:'http://localhost:8080/admin/user/info',
+            success:function(backData){
+                console.log(backData);
+                $('.user_info').children('img').attr('src',backData.data.userPic);
+                $('.user_info').children('span').html('欢迎'+'&nbsp;&nbsp;'+backData.data.nickname);
+                $('.user_center_link').children('img').attr('src',backData.data.userPic);
+                
+            }
+        })
 
     </script>
 

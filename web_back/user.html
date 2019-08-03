@@ -24,38 +24,44 @@
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">用户名称：</label>
                     <div class="col-sm-4">
-                        <input type="text" class="form-control" id="inputEmail3" value="李思思">
+                        <input type="text" name="username" class="form-control username" id="inputEmail3">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">昵称：</label>
                     <div class="col-sm-4">
-                        <input type="text" class="form-control" id="inputEmail3" value="思思">
+                        <input type="text" name="nickname" class="form-control nickname" id="inputEmail3">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="inputEmail3" class="col-sm-2 control-label">邮箱：</label>
+                    <label for="inputEmail3" class="col-sm-2 control-label email">邮箱：</label>
                     <div class="col-sm-4">
-                        <input type="text" class="form-control" id="inputEmail3" value="lisisi@126.com">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="inputPassword3" class="col-sm-2 control-label">用户图标：</label>
-                    <div class="col-sm-10">
-                        <img src="images/2.jpg" alt="" class="user_pic">
-                        <input type="file" id="exampleInputFile">
+                        <input type="text" name="email" class="form-control email" id="inputEmail3">
                     </div>
                 </div>
 
                 <div class="form-group">
-                        <label for="inputEmail3" class="col-sm-2 control-label">密码：</label>
-                        <div class="col-sm-4">
-                            <input type="password" class="form-control" id="inputEmail3" value="12345678">
-                        </div>
+                    <label for="inputPassword3" class="col-sm-2 control-label">用户图标:</label>
+                    <div class="col-sm-10">
+                        <img src="#" alt="" class="user_pic userPic"><br>
+                        <input type="file" id="exampleInputFile" name="userPic" style="display: none">
+                        <!-- 美化上传图片的按钮 -->
+                        <label
+                            style="width: 60px;height:40;border:1px solid red;margin-left: 20px;background-color: rosybrown"
+                            for="exampleInputFile"><img style="width:30px;margin-left: 15px" src="./images/btn.jpg"
+                                alt=""></label>
+
                     </div>
-               
-    
+                </div>
+
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">密码：</label>
+                    <div class="col-sm-4">
+                        <input type="password" name="password" class="form-control password" id="inputEmail3">
+                    </div>
+                </div>
+
+
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
                         <button type="submit" class="btn btn-success">修改</button>
@@ -64,6 +70,72 @@
             </form>
         </div>
     </div>
+    <script>
+        $(function () {
+            // 发送ajax请求,重新渲染页面
+            function reloadPage() {
+                $.ajax({
+                    url: 'http://localhost:8080/admin/user/detail',
+                    success: function (backData) {
+                        // console.log(backData);
+                        // $('.username').val(backData.data.username);
+                        // $('.nickname').val(backData.data.nickname);
+                        // $('.email').val(backData.data.email);
+                        // $('.password').val(backData.data.password);
+                        // 优化代码.循环对象赋值
+                        for (var key in backData.data) {
+                            $('.' + key).val(backData.data[key]);
+                        }
+                        $('.userPic').attr('src', backData.data.userPic);
+                    }
+                });
+            }
+            reloadPage();
+            // 图片预览
+            $('#exampleInputFile').on('change', function () {
+                var fileIcon = this.files[0];
+                var url = URL.createObjectURL(fileIcon);
+                $('.userPic').attr('src', url);
+            });
+            // 修改事件,文档没有说用formData,但是是post 然后是表格form
+            $('.btn-success').click(function (e) {
+                e.preventDefault();
+                var fd = new FormData($('form')[0]);
+                $.ajax({
+                    url: 'http://localhost:8080/admin/user/edit',
+                    type: 'post',
+                    data: fd,
+                    processData: false,
+                    contentType: false,
+                    success: function (backData) {
+                        // console.log(backData);
+                        if (backData.code == 200) {
+                            alert('修改成功');
+                            // parent.window.location.reload();
+                            $.ajax({
+                                url: 'http://localhost:8080/admin/user/info',
+                                success: function (backData) {
+                                    console.log(backData);
+                                    parent.$('.user_info').children('img').attr('src', backData.data.userPic);
+                                    parent.$('.user_info').children('span').html('欢迎' + '&nbsp;&nbsp;' + backData.data.nickname);
+                                    parent.$('.user_center_link').children('img').attr('src', backData.data.userPic);
+
+                                }
+                            })
+
+                        }else{
+                            alert('修改失败....');
+                        }
+
+                    }
+
+                })
+            })
+
+
+
+        })
+    </script>
 
 </body>
 

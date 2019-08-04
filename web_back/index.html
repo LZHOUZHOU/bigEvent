@@ -115,7 +115,7 @@
         $.ajax({
             url:'http://localhost:8080/admin/user/info',
             success:function(backData){
-                console.log(backData);
+                // console.log(backData);
                 $('.user_info').children('img').attr('src',backData.data.userPic);
                 $('.user_info').children('span').html('欢迎'+'&nbsp;&nbsp;'+backData.data.nickname);
                 $('.user_center_link').children('img').attr('src',backData.data.userPic);

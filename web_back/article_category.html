@@ -29,45 +29,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>未分类</td>
-                        <td>uncategorized</td>
-                        <td class="text-center">
-                            <a href="javascript:editTr({&quot;id&quot;:&quot;1&quot;,&quot;slug&quot;:&quot;uncategorized&quot;,&quot;name&quot;:&quot;未分类&quot;});"
-                                class="btn btn-info btn-xs">编辑</a>
-                            <a href="javascript:deleteTr( 1 );" class="btn btn-danger btn-xs">删除</a>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>奇趣事</td>
-                        <td>funny</td>
-                        <td class="text-center">
-                            <a href="javascript:editTr({&quot;id&quot;:&quot;2&quot;,&quot;slug&quot;:&quot;funny&quot;,&quot;name&quot;:&quot;奇趣事&quot;});"
-                                class="btn btn-info btn-xs">编辑</a>
-                            <a href="javascript:deleteTr( 2 );" class="btn btn-danger btn-xs">删除</a>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>会生活</td>
-                        <td>living</td>
-                        <td class="text-center">
-                            <a href="javascript:editTr({&quot;id&quot;:&quot;3&quot;,&quot;slug&quot;:&quot;living&quot;,&quot;name&quot;:&quot;会生活&quot;});"
-                                class="btn btn-info btn-xs">编辑</a>
-                            <a href="javascript:deleteTr( 3 );" class="btn btn-danger btn-xs">删除</a>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>爱旅行</td>
-                        <td>travel</td>
-                        <td class="text-center">
-                            <a href="javascript:editTr({&quot;id&quot;:&quot;4&quot;,&quot;slug&quot;:&quot;travel&quot;,&quot;name&quot;:&quot;爱旅行&quot;});"
-                                class="btn btn-info btn-xs">编辑</a>
-                            <a href="javascript:deleteTr( 4 );" class="btn btn-danger btn-xs">删除</a>
-                        </td>
-                    </tr>
                 </tbody>
                 <tfoot>
                     <tr>
@@ -79,7 +40,7 @@
             </table>
         </div>
     </div>
-
+    <!-- 模态框 -->
     <div class="modal fade" id="addModal">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -89,13 +50,15 @@
                 </div>
                 <div class="modal-body">
                     <form>
+                        <!-- 由于传参需要id,又不能影响布局,所以隐藏id -->
+                        <input type="hidden" name='id' id="categoryId">
                         <div class="form-group">
                             <label class="control-label">分类名称:</label>
-                            <input type="text" class="form-control" id="recipient-name">
+                            <input type="text" class="form-control" id="recipient-name" name="name">
                         </div>
                         <div class="form-group">
                             <label class="control-label">分类别名:</label>
-                            <input type="text" class="form-control" id="recipient-text">
+                            <input type="text" class="form-control" id="recipient-text" name="slug">
                         </div>
                     </form>
                 </div>
@@ -114,21 +77,21 @@
         });
 
         $('#model_shutoff').click(function () {
-            alert('shutoff');
+            // alert('shutoff');
             $('#addModal').modal('hide');
         });
 
         $('#model_add').click(function () {
-            alert('add');
+            // alert('add');
             $('#addModal').modal('hide');
         });
 
-        $('.category_table').delegate('a', 'click', function () {
-            if ($(this).hasClass('btn-info')) {
-                $('#addModal .modal-title').html('修改分类名称');
-                $('#addModal').modal('show');
-            }
-        })      
+        // $('.category_table').delegate('a', 'click', function () {
+        //     if ($(this).hasClass('btn-info')) {
+        //         $('#addModal .modal-title').html('修改分类名称');
+        //         $('#addModal').modal('show');
+        //     }
+        // })      
     </script>
     <!-- 导入模板引擎 -->
     <script src="./js/template-web.js"></script>
@@ -139,8 +102,8 @@
                     <td>{{v.slug}}</td>
                     <td class="text-center modify">
                         <a href="javascript:editTr({&quot;id&quot;:&quot;1&quot;,&quot;slug&quot;:&quot;uncategorized&quot;,&quot;name&quot;:&quot;未分类&quot;});"
-                            class="btn btn-info btn-xs">编辑</a>
-                        <a href="#" tem_id={{v.id}} class="btn btn-danger btn-xs" id='del'>删除</a>
+                            class="btn btn-info btn-xs edit" tem_id={{v.id}} >编辑</a>
+                        <a href="#" tem_id={{v.id}} class="btn btn-danger btn-xs del">删除</a>
                     </td>
                 </tr>
             {{/each}}
@@ -153,7 +116,7 @@
                 $.ajax({
                     url: 'http://localhost:8080/admin/category/list',
                     success: function (backData) {
-                        // console.log(backData);
+                        // console.log(backData);       
                         var resHtml = template('temp_categrory', backData);
                         $('tbody').html(resHtml);
 
@@ -165,38 +128,126 @@
 
             // 新增事件
             $('#model_add').on('click', function () {
-                var reciname = $('#recipient-name').val();
-                var recitext = $('#recipient-text').val();
-                $.ajax({
-                    url: 'http://localhost:8080/admin/category/add',
-                    type: 'post',
-                    data: {
-                        name: reciname,
-                        slug: recitext,
-                    },
-                    success: function (backData) {
-                        //    console.log(backData);
-                        if (backData.code == 201)
-                            alert('新增成功');
-                        reloadPage();
+                $('#model_add').text('新增');
+                $('#model_add').removeClass('btn-success');
+                $('#addModal .modal-title').html('新增分类');
+                if ($('#model_add').text() == '新增') {
+                    var reciname = $('#recipient-name').val();
+                    var recitext = $('#recipient-text').val();
+                    $.ajax({
+                        url: 'http://localhost:8080/admin/category/add',
+                        type: 'post',
+                        data: {
+                            name: reciname,
+                            slug: recitext,
+                        },
+                        success: function (backData) {
+                            //    console.log(backData);
+                            if (backData.code == 201) {
+                                alert('新增成功');
+                                reloadPage();
+                            } else {
+                                alert('新增失败');
+                            }
 
-                    }
-                })
+                        },
+                    })
+
+                }
 
             })
         });
 
         // 删除事件
-        $('tbody').on('click','#del',function(e){
+        $('tbody').on('click', '.del', function (e) {
             e.preventDefault();
-            // $(this).parents('tr').remove();
+            var that = $(this);
+            var id = $(this).attr('tem_id');
+            // console.log(id);
             if (confirm("确认要删除么?")) {
-                $(this).prepend().parent().parent().remove();
-            }else{
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/admin/category/delete',
+                    data: {
+                        id: id,
+                    },
+                    success: function (backData) {
+                        // console.log(backData);
+                        if (backData.code == 204) {
+                            that.prepend().parent().parent().remove();
+                        } else {
+                            alert('未删除成功');
+                        };
+                    }
+                });
+                alert('删除成功!');
+
+            } else {
                 return;
-            }
-           
+            };
         })
+
+        // 编辑事件
+
+        //  给点击按钮们设置编辑事件
+        $('tbody').on('click', '.edit', function (e) {
+            e.preventDefault();
+            $('#addModal').modal('show');
+            $('#model_add').text('修改');
+            $('#model_add').addClass('btn-success');
+            $('#addModal .modal-title').html('修改分类');
+            var that = $(this);
+
+            // 根据id获取文章类别
+            var id = $(this).attr('tem_id');
+            $('#categoryId').attr('name', id);
+            $.ajax({
+                url: 'http://localhost:8080/admin/category/search',
+                data: {
+                    id: id,
+                },
+                success: function (backData) {
+                    if ($('#model_add').text() =='修改') {
+                        $('#recipient-name').val(backData.data[0].name);
+                        $('#recipient-text').val(backData.data[0].slug);
+                        // 点击模态框中的修改的时候,编辑事件
+                        $('#addModal').on('click', '#model_add', function () {
+                            var editId = $('#categoryId').attr('name');
+                            var editName = $('#recipient-name').val();
+                            var editSlug = $('#recipient-text').val();
+                            // console.log(editId, editName, editSlug);
+                            $.ajax({
+                                url: 'http://localhost:8080/admin/category/edit',
+                                type: 'post',
+                                data: {
+                                    id: editId,
+                                    name: editName,
+                                    slug: editSlug
+                                },
+                                success: function (editData) {
+                                    console.log(editData);
+                                    if (editData.code == 200) {
+                                        alert('修改成功');
+                                        // 重新渲染页面.
+                                        // reloadPage(); ??报错未定义
+                                        that.parent().prev().text(editSlug);
+                                        that.parent().prev().prev().text(editName);
+                                    } else {
+                                        alert('修改失败');
+                                    }
+
+                                }
+                            })
+                        });
+                    }
+
+
+                },
+            });
+        })
+
+
+
     </script>
 
 </body>

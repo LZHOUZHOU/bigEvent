@@ -33,7 +33,8 @@
                 <tfoot>
                     <tr>
                         <td colspan="3" class="text-center">
-                            <a href="#" class="btn btn-success" data-toggle="modal" data-target="#addModal">新增分类</a>
+                            <a href="#" class="btn btn-success addCate" data-toggle="modal"
+                                data-target="#addModal">新增</a>
                         </td>
                     </tr>
                 </tfoot>
@@ -127,10 +128,48 @@
             reloadPage();
 
             // 新增事件
-            $('#model_add').on('click', function () {
+            $('.addCate').on('click', function () {
+                // $('#addModal').modal('show');
+
                 $('#model_add').text('新增');
                 $('#model_add').removeClass('btn-success');
                 $('#addModal .modal-title').html('新增分类');
+
+                $('#recipient-name').val('');
+                $('#recipient-text').val('');
+
+            })
+
+
+            //  给点击按钮们设置编辑事件
+            $('tbody').on('click', '.edit', function (e) {
+                e.preventDefault();
+                $('#addModal').modal('show');
+                $('#model_add').text('修改');
+                $('#model_add').addClass('btn-success');
+                $('#addModal .modal-title').html('修改分类');
+                // 根据id获取文章类别
+                var id = $(this).attr('tem_id');
+                $('#categoryId').attr('name', id);
+                $.ajax({
+                    url: 'http://localhost:8080/admin/category/search',
+                    data: {
+                        id: id,
+                    },
+                    success: function (backData) {
+                        $('#recipient-name').val(backData.data[0].name);
+                        $('#recipient-text').val(backData.data[0].slug);
+
+                    },
+                });
+            })
+
+
+
+            // 当点击模态框中的新增/修改的按钮时,判断是修改还是新增
+            $('#model_add').on('click', function (e) {
+                e.preventDefault();
+                //如果是新增按钮(也可以判断是否有这个类名hasClass)
                 if ($('#model_add').text() == '新增') {
                     var reciname = $('#recipient-name').val();
                     var recitext = $('#recipient-text').val();
@@ -142,10 +181,13 @@
                             slug: recitext,
                         },
                         success: function (backData) {
-                            //    console.log(backData);
+                            console.log(backData);
                             if (backData.code == 201) {
+                                console.log(1111);
+                                reloadPage();//为什么提醒函数未定义,报错
                                 alert('新增成功');
-                                reloadPage();
+
+
                             } else {
                                 alert('新增失败');
                             }
@@ -153,99 +195,65 @@
                         },
                     })
 
+                } else {
+                    // 修改按钮
+                    var editId = $('#categoryId').attr('name');
+                    var editName = $('#recipient-name').val();
+                    var editSlug = $('#recipient-text').val();
+                    // console.log(editId, editName, editSlug);
+                    $.ajax({
+                        url: 'http://localhost:8080/admin/category/edit',
+                        type: 'post',
+                        data: {
+                            id: editId,
+                            name: editName,
+                            slug: editSlug
+                        },
+                        success: function (editData) {
+                            console.log(editData);
+                            if (editData.code == 200) {
+                                alert('修改成功');
+                                // 重新渲染页面.
+                                reloadPage(); ////为什么提醒函数未定义,报错
+                            } else {
+                                alert('修改失败');
+                            }
+
+                        }
+                    })
                 }
-
             })
+
+            // 删除事件
+            $('tbody').on('click', '.del', function (e) {
+                e.preventDefault();
+                var that = $(this);
+                var id = $(this).attr('tem_id');
+                // console.log(id);
+                if (confirm("确认要删除么?")) {
+                    $.ajax({
+                        type: 'post',
+                        url: 'http://localhost:8080/admin/category/delete',
+                        data: {
+                            id: id,
+                        },
+                        success: function (backData) {
+                            // console.log(backData);
+                            if (backData.code == 204) {
+                                that.prepend().parent().parent().remove();
+                            } else {
+                                alert('未删除成功');
+                            };
+                        }
+                    });
+                    alert('删除成功!');
+
+                } else {
+                    return;
+                };
+            })
+
         });
-
-        // 删除事件
-        $('tbody').on('click', '.del', function (e) {
-            e.preventDefault();
-            var that = $(this);
-            var id = $(this).attr('tem_id');
-            // console.log(id);
-            if (confirm("确认要删除么?")) {
-                $.ajax({
-                    type: 'post',
-                    url: 'http://localhost:8080/admin/category/delete',
-                    data: {
-                        id: id,
-                    },
-                    success: function (backData) {
-                        // console.log(backData);
-                        if (backData.code == 204) {
-                            that.prepend().parent().parent().remove();
-                        } else {
-                            alert('未删除成功');
-                        };
-                    }
-                });
-                alert('删除成功!');
-
-            } else {
-                return;
-            };
-        })
-
-        // 编辑事件
-
-        //  给点击按钮们设置编辑事件
-        $('tbody').on('click', '.edit', function (e) {
-            e.preventDefault();
-            $('#addModal').modal('show');
-            $('#model_add').text('修改');
-            $('#model_add').addClass('btn-success');
-            $('#addModal .modal-title').html('修改分类');
-            var that = $(this);
-
-            // 根据id获取文章类别
-            var id = $(this).attr('tem_id');
-            $('#categoryId').attr('name', id);
-            $.ajax({
-                url: 'http://localhost:8080/admin/category/search',
-                data: {
-                    id: id,
-                },
-                success: function (backData) {
-                    if ($('#model_add').text() =='修改') {
-                        $('#recipient-name').val(backData.data[0].name);
-                        $('#recipient-text').val(backData.data[0].slug);
-                        // 点击模态框中的修改的时候,编辑事件
-                        $('#addModal').on('click', '#model_add', function () {
-                            var editId = $('#categoryId').attr('name');
-                            var editName = $('#recipient-name').val();
-                            var editSlug = $('#recipient-text').val();
-                            // console.log(editId, editName, editSlug);
-                            $.ajax({
-                                url: 'http://localhost:8080/admin/category/edit',
-                                type: 'post',
-                                data: {
-                                    id: editId,
-                                    name: editName,
-                                    slug: editSlug
-                                },
-                                success: function (editData) {
-                                    console.log(editData);
-                                    if (editData.code == 200) {
-                                        alert('修改成功');
-                                        // 重新渲染页面.
-                                        // reloadPage(); ??报错未定义
-                                        that.parent().prev().text(editSlug);
-                                        that.parent().prev().prev().text(editName);
-                                    } else {
-                                        alert('修改失败');
-                                    }
-
-                                }
-                            })
-                        });
-                    }
-
-
-                },
-            });
-        })
-
 
 
     </script>

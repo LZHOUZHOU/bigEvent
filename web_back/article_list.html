@@ -86,7 +86,7 @@
             <td class="text-center">{{v.date}}</td>
             <td class="text-center">{{v.state}}</td>
             <td class="text-center">
-                <a temp_id ={{v.categoryId}} href="post-edit.html?id=1001" class="btn btn-default btn-xs">编辑</a>
+                <a temp_id ={{v.categoryId}} href="./article_edit.html" class="btn btn-default btn-xs">编辑</a>
                 <a temp_id ={{v.categoryId}} href="javascript:deleteTr( 1001 );" class="btn btn-danger btn-xs">删除</a>
             </td>
          </tr>
@@ -109,6 +109,8 @@
         $.ajax({
             url: 'http://localhost:8080/admin/category/list',
             success: function (backData) {
+                console.log(backData);
+
                 var resHtml = template('temp_cate', backData);
                 $('#selCategory').html(resHtml);
 
@@ -116,46 +118,59 @@
         });
 
         // 筛选事件,重新渲染事件
+        var state
+        var cate
+        var totalPage = 10
+        var isTrue = true
         $('#btnSearch').click(function (e) {
             e.preventDefault();
-            var cate = $('#selCategory').val();
-            var state = $('#selStatus').val();
+            isTrue = false
+            cate = $('#selCategory').val();
+            state = $('#selStatus').val();
             // console.log(cate, state);
             // 渲染主体数据
             cate_arti(1, 7, state, cate);
 
         });
+        // 初始化插件
+        var defaultOpts = {
+            totalPages: totalPage,
+            onPageClick: function (event, page) {
+                cate_arti(1, 7, state, cate)
+            }
+        }
+        var elm = $('.pagination-sm')
+        elm.twbsPagination(defaultOpts)
 
         // 获取文章类别,渲染主体数据方法.
-        function cate_arti(page, perpage, state, type) {
-            $.ajax({
+        function cate_arti(page, perpage, state1, type1) {
+            return $.ajax({
                 url: 'http://localhost:8080/admin/article/query',
                 data: {
                     page: page,
                     perpage: perpage,
-                    state: state,
-                    type: type,
+                    state: state1,
+                    type: type1,
                 },
                 success: function (backData) {
                     console.log(backData);
                     // 获取总页数
-                    var totalPage = backData.data.totalPage;
-                    // 渲染页面主体数据
+                    var totalPage1 = backData.data.totalPage;
                     var resHtml = template('temp_list', backData);
                     $('tbody').html(resHtml);
+                    // 渲染页面主体数据
+                    if (totalPage == totalPage1) return
+                    totalPage = totalPage1
                     //初始化分页页码数.
-                    $('.pagination-sm').twbsPagination({
-                        totalPages: totalPage,
-                        //
+                    elm.twbsPagination('destroy');
+                    elm.twbsPagination($.extend({}, defaultOpts, {
                         startPage: 1,
-                        onPageClick: function (event, page) {
-                            cate_arti(page, perpage,state,type);
-                        }
-                    });
+                        totalPages: totalPage1
+                    }));
                 }
             });
         };
-        cate_arti(1, 7, '', '');
+        // cate_arti(1, 7);
 
 
 

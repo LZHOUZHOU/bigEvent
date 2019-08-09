@@ -15,6 +15,7 @@
     <script src="js/jedate/js/jedate.js"></script>
     <script src="js/tinymce/js/tinymce/tinymce.min.js"></script>
     <script src="js/tinymce/js/tinymce_setup.js"></script>
+    <script src="./js/moment-with-locales.js"></script>
 </head>
 
 <body>
@@ -27,19 +28,19 @@
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章标题：</label>
                     <div class="col-sm-10">
-                        <input type="email" class="form-control" id="inputEmail3" placeholder="文章标题">
+                        <input type="text" name="title" class="form-control" id="inputEmail3" placeholder="文章标题">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputPassword3" class="col-sm-2 control-label">文章封面：</label>
                     <div class="col-sm-10">
-                        <input type="file" id="exampleInputFile">
+                        <input type="file" name="cover" id="exampleInputFile">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章类别：</label>
                     <div class="col-sm-4">
-                        <select class="form-control">
+                        <select id="selCategory" class="form-control" name="categoryId">
                             <option>1</option>
                             <option>2</option>
                             <option>3</option>
@@ -53,7 +54,7 @@
                     <div class="col-sm-4">
 
                         <div class="input-group">
-                            <input type="text" class="form-control" placeholder="YYYY-MM-DD" id="dateinput">
+                            <input type="text" name="date" class="form-control" placeholder="YYYY-MM-DD" id="dateinput">
                             <span class="input-group-btn">
                                 <button class="btn btn-default" type="button"
                                     onclick="jeDate('#dateinput',{trigger:false,format: 'YYYY-MM-DD'})"><i
@@ -65,21 +66,90 @@
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章内容：</label>
                     <div class="col-sm-10">
-                        <textarea class="form-control" id="rich_content" name="content" placeholder="文章内容">
+                        <textarea class="form-control" id="rich_content" placeholder="文章内容">
                             Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda fugiat illo nihil molestias ab. Laborum eius non atque, totam sapiente quae obcaecati assumenda ratione inventore pariatur maiores, qui libero delectus.
-                            </textarea>
+                        </textarea>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
-                        <button type="submit" class="btn btn-success">发布</button>
-                        <button type="submit" class="btn btn-default">存为草稿</button>
+                        <button type="submit" class="btn btn-success publish_btn" >发布</button>
+                        <button type="submit" class="btn btn-default publish_btn">存为草稿</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
+    <script src="./js/template-web.js"></script>
+    <!-- 建立一个模板,渲染文章类别-->
+    <script id="temp_cate" type="text/html">
+        <option value=''>所有分类</option>
+        {{each data v}}
+        <option value={{v.id}}>{{v.name}}</option> 
+        {{/each}}   
+    </script>
+    <script>
+        // 获取当前之间
+        var currentTime = moment().format('YYYY-MM-DD');
+        $('#dateinput').val(currentTime);
+        // 渲染文章类别
+        $.ajax({
+            url: 'http://localhost:8080/admin/category/list',
+            success: function (backData) {
+                console.log(backData);
 
+                var resHtml = template('temp_cate', backData);
+                $('#selCategory').html(resHtml);
+
+            }
+        });
+
+        // 发布文章
+
+        //发布/存为草稿事件
+        $('.publish_btn').click(function (e) {
+            //    创建一个对fd对象,
+            var fd = new FormData($('form')[0]);
+            //    获取文章类别的值,追加到fd中
+            var categoryId = $('#selCategory').val();
+            fd.append('categoryId', categoryId);
+            // 获取富文本的值,并追加到fd中
+            fd.append('content', tinyMCE.activeEditor.getContent());
+            e.preventDefault();
+            if ($(this).hasClass('btn-success')) {
+                fd.append('state', '已发布');
+                $.ajax({
+                    url: "http://localhost:8080/admin/article/publish",
+                    type: 'post',
+                    data: fd,
+                    processData: false,
+                    contentType: false,
+                    success: function (backData) {
+                        // console.log(backData);
+                        alert('发布成功');
+
+                    }
+                });
+
+            } else {
+                fd.append('state', '草稿');
+                $.ajax({
+                    url: "http://localhost:8080/admin/article/publish",
+                    type: 'post',
+                    data: fd,
+                    processData: false,
+                    contentType: false,
+                    success: function (backData) {
+                        // console.log(backData);
+                        alert('已存为草稿');
+                      
+
+                    }
+                });
+            }
+        })
+
+    </script>
 </body>
 
 </html>

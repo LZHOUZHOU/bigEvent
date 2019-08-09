@@ -86,7 +86,7 @@
             <td class="text-center">{{v.date}}</td>
             <td class="text-center">{{v.state}}</td>
             <td class="text-center">
-                <a temp_id ={{v.categoryId}} href="./article_edit.html" class="btn btn-default btn-xs">编辑</a>
+                <a temp_id ={{v.categoryId}} href="./article_edit.html?id={{v.id}}" class="btn btn-default btn-xs">编辑</a>
                 <a temp_id ={{v.categoryId}} href="javascript:deleteTr( 1001 );" class="btn btn-danger btn-xs">删除</a>
             </td>
          </tr>
@@ -136,7 +136,7 @@
         var defaultOpts = {
             totalPages: totalPage,
             onPageClick: function (event, page) {
-                cate_arti(1, 7, state, cate)
+                cate_arti(page, 7, state, cate)
             }
         }
         var elm = $('.pagination-sm')
